@@ -13,17 +13,31 @@ pygame.init()
 WINDOW_SIZE = (600, 750)
 GRIGLIA_SIZE = (600, 600)
 RESTART_SIZE = (75, 75)
+CRONOMETRE_SIZE = (150,75)
+CRONOMETRE_COORDINATES = ((WINDOW_SIZE[0] - RESTART_SIZE[0])/2 - 80 - CRONOMETRE_SIZE[0],
+                          (WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 - CRONOMETRE_SIZE[1]/2)
 
 screen = pygame.display.set_mode(WINDOW_SIZE, 0, 32)
 pygame.display.set_caption('Campo Minato')
 
 clock = pygame.time.Clock()
-fps = 200
+fps = 120
+
+img_time = " 0"
 
 blocca = False
+
 riavvio = False
 
 fine = False
+
+tempo = 000
+font = pygame.font.SysFont(pygame.font.get_default_font(),int(WINDOW_SIZE[1]), bold = True, italic = False)
+render_cronometro = font.render(str(tempo), True, (230, 120, 90), None)
+render_cronometro = pygame.transform.scale(render_cronometro,(CRONOMETRE_SIZE[0],CRONOMETRE_SIZE[1]))
+screen.blit(render_cronometro,
+            ((CRONOMETRE_COORDINATES[0] + CRONOMETRE_SIZE[0]/2 - render_cronometro.get_width()/2),
+            (CRONOMETRE_COORDINATES[1] + CRONOMETRE_SIZE[1]/2 - render_cronometro.get_height()/2)))
 g = Griglia(screen, GRIGLIA_SIZE[0], GRIGLIA_SIZE[1], (0, (WINDOW_SIZE[1]-GRIGLIA_SIZE[1])))
 g.draw()
 
@@ -32,14 +46,23 @@ pressed = False
 def click_down(posx,posy,su_griglia):
     global blocca
     if su_griglia:
+        
         if g.click(posx, posy):
             blocca = True
+        else:
+            posx -= g.offset[0]
+            posy -= g.offset[1]
+            col = (posx*g.ncol) // g.width
+            rig = (posy*g.nrig) // g.height
+            if g.celle[rig][col].val == "":
+                g.scopritutto(g.celle[rig][col], rig,col)
+            g.draw()
     else: #click sulla barra nera
         pass
             
 
 while True:
-
+    
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
@@ -85,6 +108,20 @@ while True:
                      (WINDOW_SIZE[1]-GRIGLIA_SIZE[1])/2 - RESTART_SIZE[1]/2, 
                      RESTART_SIZE[0], RESTART_SIZE[1]))
     
+    #draw casella cronometro
+    pygame.draw.rect(screen, (255, 255, 255), 
+                    (CRONOMETRE_COORDINATES[0], 
+                        CRONOMETRE_COORDINATES[1], 
+                        CRONOMETRE_SIZE[0], CRONOMETRE_SIZE[1]))
+    #stampo solo ad 1/60 delle volte in cui entra
+    if tempo%120 == 0:
+        img_time = f'{int(tempo/120):2}'
+    render_cronometro = font.render(img_time, True, (230, 80, 110), None)
+    render_cronometro = pygame.transform.scale(render_cronometro,(CRONOMETRE_SIZE[1],CRONOMETRE_SIZE[1]))
+    screen.blit(render_cronometro,
+                ((CRONOMETRE_COORDINATES[0] + CRONOMETRE_SIZE[0]/2 - render_cronometro.get_width()/2),
+                (CRONOMETRE_COORDINATES[1] + CRONOMETRE_SIZE[1]/2 - render_cronometro.get_height()/2)))
+    #porto avanti il cronometro
     # draw della faccina sul tasto restart
     if not g.bloccato:
         faccina = pygame.image.load("faccina_felice.png")
@@ -101,9 +138,13 @@ while True:
                                (WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 - RESTART_SIZE[1]/2))
         
     if riavvio: # riavvio vero e proprio
+        tempo = 000
         g = Griglia(screen, GRIGLIA_SIZE[0], GRIGLIA_SIZE[1], (0, (WINDOW_SIZE[1]-GRIGLIA_SIZE[1])))
         g.draw()
         print("Riavvio")
         riavvio = False
+        
     pygame.display.flip()
+    
+    tempo +=1
     clock.tick(fps)

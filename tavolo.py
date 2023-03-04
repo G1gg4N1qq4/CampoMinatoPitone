@@ -63,6 +63,8 @@ class Cella:
             y = self.posy + self.height / 2 - self.renderNumero.get_height() / 2
             self.screen.blit(self.renderNumero, (x, y))
 
+        
+        
 class Griglia:
     def __init__(self, screen, width, height, offset, nrig=10, ncol=10, nmine=16) -> None:
         self.screen = screen
@@ -116,8 +118,8 @@ class Griglia:
                         self.celle[i][j].val = str(nmine)
 
     def draw(self):
-        for riga in self.celle:
-            for cella in riga:
+        for i,riga in enumerate(self.celle):
+            for j,cella in enumerate(riga):
                 cella.draw()
                 if cella.esplosa:
                     self.bloccato = True
@@ -133,4 +135,29 @@ class Griglia:
 
 
         return self.celle[rig][col].scopri()
+    
+            
+    def scopritutto(self,cella,rig,col):
+        cella.coperto = False
+        prossimo = []
+        trovato = False
+        for riga in range(-1,+2):
+            for colonna in range(-1,+2):
+                if ((rig+riga >=0 and rig+riga<len(self.celle)) and (col+colonna >= 0 and col+colonna<len(self.celle))):
+                    if self.celle[rig+riga][col+colonna].val == vuoto and self.celle[rig+riga][col+colonna].coperto:
+                        self.celle[rig+riga][col+colonna].coperto = False
+                        prossimo = [self.celle[rig+riga][col+colonna],rig+riga,col+colonna]
+                        trovato = True
+                    self.celle[rig+riga][col+colonna].coperto = False
+        if trovato:
+            self.scopritutto(prossimo[0], prossimo[1], prossimo[2])
+        # self.celle[rig-1][col].scopri()
+        # self.celle[rig][col-1].scopri()
+        # self.celle[rig-1][col-1].scopri()
+        # self.celle[rig-1][col+1].scopri()
+        # self.celle[rig+1][col-1].scopri()
+        # self.celle[rig+1][col].scopri()
+        # self.celle[rig][col+1].scopri()
+        # self.celle[rig+1][col+1].scopri()
+        
     
