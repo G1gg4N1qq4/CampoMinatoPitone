@@ -7,8 +7,6 @@ system("cls")
 import pygame
 from pygame.locals import *
 
-pygame.init()
-
 #impostazioni finestra
 WINDOW_SIZE = (600, 750)
 GRIGLIA_SIZE = (600, 600)
@@ -18,6 +16,7 @@ CRONOMETRE_COORDINATES = ((WINDOW_SIZE[0] - RESTART_SIZE[0])/2 - 80 - CRONOMETRE
                           (WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 - CRONOMETRE_SIZE[1]/2)
 
 screen = pygame.display.set_mode(WINDOW_SIZE, 0, 32)
+
 pygame.display.set_caption('Campo Minato')
 
 clock = pygame.time.Clock()
@@ -32,6 +31,8 @@ riavvio = False
 fine = False
 
 tempo = 000
+
+pygame.init()
 font = pygame.font.SysFont(pygame.font.get_default_font(),int(WINDOW_SIZE[1]), bold = True, italic = False)
 render_cronometro = font.render(str(tempo), True, (230, 120, 90), None)
 render_cronometro = pygame.transform.scale(render_cronometro,(CRONOMETRE_SIZE[0],CRONOMETRE_SIZE[1]))
@@ -41,6 +42,12 @@ screen.blit(render_cronometro,
 g = Griglia(screen, GRIGLIA_SIZE[0], GRIGLIA_SIZE[1], (0, (WINDOW_SIZE[1]-GRIGLIA_SIZE[1])))
 g.draw()
 
+#inizializzo pygame.mixer
+pygame.mixer.pre_init(44100,-16,2,512)
+pygame.mixer.init(44100,-16,2,512,)
+
+# musica = pygame.mixer_music.load("mainmusic.mp3",)
+musica = pygame.mixer.Sound("mainmusic.mp3")
 pressed = False
 
 def click_down(posx,posy,su_griglia):
@@ -48,6 +55,9 @@ def click_down(posx,posy,su_griglia):
     if su_griglia:
         
         if g.click(posx, posy):
+            explsound = pygame.mixer.Sound("explosionmusic.wav")
+            explsound.play(0,0,0)
+            musica.stop()
             blocca = True
         else:
             posx -= g.offset[0]
@@ -61,8 +71,9 @@ def click_down(posx,posy,su_griglia):
         pass
             
 
+musica.play(-1,0,0)
 while True:
-    
+        
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
@@ -102,7 +113,7 @@ while True:
     # chiamo le draw per tutti gli elementi
     g.draw()
 
-               
+    #draw restart
     pygame.draw.rect(screen, (255, 255, 255),
                     (WINDOW_SIZE[0]/2 - RESTART_SIZE[0]/2, 
                      (WINDOW_SIZE[1]-GRIGLIA_SIZE[1])/2 - RESTART_SIZE[1]/2, 
@@ -121,7 +132,7 @@ while True:
     screen.blit(render_cronometro,
                 ((CRONOMETRE_COORDINATES[0] + CRONOMETRE_SIZE[0]/2 - render_cronometro.get_width()/2),
                 (CRONOMETRE_COORDINATES[1] + CRONOMETRE_SIZE[1]/2 - render_cronometro.get_height()/2)))
-    #porto avanti il cronometro
+
     # draw della faccina sul tasto restart
     if not g.bloccato:
         faccina = pygame.image.load("faccina_felice.png")
@@ -138,11 +149,13 @@ while True:
                                (WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 - RESTART_SIZE[1]/2))
         
     if riavvio: # riavvio vero e proprio
+       
         tempo = 000
         g = Griglia(screen, GRIGLIA_SIZE[0], GRIGLIA_SIZE[1], (0, (WINDOW_SIZE[1]-GRIGLIA_SIZE[1])))
         g.draw()
         print("Riavvio")
         riavvio = False
+        musica.play()
         
     pygame.display.flip()
     

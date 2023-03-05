@@ -50,6 +50,7 @@ class Cella:
             return
         elif self.val == mina:
             self.screen.blit(self.img_mina, (self.posx, self.posy))
+            
 
             if self.esplosa:  
                 self.img_exp = pygame.image.load("Exp.png")
@@ -132,7 +133,7 @@ class Griglia:
         # print(rig, col)
 
         #partita persa
-
+        
 
         return self.celle[rig][col].scopri()
     
@@ -149,15 +150,8 @@ class Griglia:
                         prossimo = [self.celle[rig+riga][col+colonna],rig+riga,col+colonna]
                         trovato = True
                     self.celle[rig+riga][col+colonna].coperto = False
+                    
         if trovato:
             self.scopritutto(prossimo[0], prossimo[1], prossimo[2])
-        # self.celle[rig-1][col].scopri()
-        # self.celle[rig][col-1].scopri()
-        # self.celle[rig-1][col-1].scopri()
-        # self.celle[rig-1][col+1].scopri()
-        # self.celle[rig+1][col-1].scopri()
-        # self.celle[rig+1][col].scopri()
-        # self.celle[rig][col+1].scopri()
-        # self.celle[rig+1][col+1].scopri()
         
     
