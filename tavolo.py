@@ -15,6 +15,8 @@ class Cella:
 
         self.coperto = True
 
+        self.segnato = False
+            
         self.esplosa = False
 
         self.img_mina = pygame.image.load("Mina.png")
@@ -24,7 +26,7 @@ class Cella:
         self.font = pygame.font.SysFont(pygame.font.get_default_font(), int(self.height), bold = True, italic = False)
 
     def scopri(self):
-        if not self.coperto:
+        if not self.coperto or self.segnato:
             return False
         self.coperto = False
 
@@ -33,12 +35,23 @@ class Cella:
 
             return True
 
+    def segna(self,rightclick):
+        if rightclick:
+            return True
+        self.segnato = not self.segnato
+        
+        
 
     def draw(self) -> None:
 
         if self.coperto:
             pygame.draw.rect(self.screen, (80, 80, 80),
                             (self.posx, self.posy, self.width, self.height))
+            if self.segnato:
+                
+                self.bandiera = pygame.image.load("bandiera.png")
+                self.bandiera = pygame.transform.scale(self.bandiera, (self.width,self.height))
+                self.screen.blit(self.bandiera, (self.posx, self.posy))
         else:
             pygame.draw.rect(self.screen, (40, 40, 40),
                             (self.posx, self.posy, self.width, self.height))
@@ -75,6 +88,7 @@ class Griglia:
         self.nrig = nrig
         self.ncol = ncol
         self.nmine = nmine
+        self.nbandiere = nmine
         self.bloccato = False
         # self.celle = []
         # for i in range(nrig):
@@ -124,6 +138,10 @@ class Griglia:
                 cella.draw()
                 if cella.esplosa:
                     self.bloccato = True
+                    
+                if self.nbandiere < -3:
+                    self.bloccato = True
+                    
 
     def click(self, x, y):
         x -= self.offset[0]
@@ -140,6 +158,9 @@ class Griglia:
             
     def scopritutto(self,cella,rig,col):
         cella.coperto = False
+        if cella.segnato == True:
+            cella.segnato = False
+            self.nbandiere +=1
         prossimo = []
         trovato = False
         for riga in range(-1,+2):
@@ -149,9 +170,23 @@ class Griglia:
                         self.celle[rig+riga][col+colonna].coperto = False
                         prossimo = [self.celle[rig+riga][col+colonna],rig+riga,col+colonna]
                         trovato = True
+                        
+                    if self.celle[rig+riga][col+colonna].segnato == True:
+                        self.celle[rig+riga][col+colonna].segnato = False
+                        self.nbandiere +=1
                     self.celle[rig+riga][col+colonna].coperto = False
                     
         if trovato:
             self.scopritutto(prossimo[0], prossimo[1], prossimo[2])
         
-    
+    def controllatavolo(self):
+        coperte = 0
+        segnate = 0
+        for rig in self.celle:
+            for celle in rig:
+                if celle.coperto == True:
+                    coperte +=1
+                if celle.segnato== True:
+                    segnate +=1
+                
+        return (coperte,segnate)
