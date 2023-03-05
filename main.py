@@ -8,7 +8,7 @@ import pygame
 from pygame.locals import *
 
 #impostazioni finestra
-WINDOW_SIZE = (600, 650)
+WINDOW_SIZE = (600, 750)
 GRIGLIA_SIZE = (600, 600)
 RESTART_SIZE = (75, 75)
 CRONOMETRE_SIZE = (150,75)
