@@ -15,7 +15,7 @@ CRONOMETRE_SIZE = (150,75)
 CRONOMETRE_COORDINATES = ((WINDOW_SIZE[0] - RESTART_SIZE[0])/2 - 80 - CRONOMETRE_SIZE[0],
                           (WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 - CRONOMETRE_SIZE[1]/2)
 FLAGS_COUNTER = (150,75)
-COUNTER_COORDINATES = ((WINDOW_SIZE[0] - FLAGS_COUNTER[0]) - 80, 
+COUNTER_COORDINATES = ((WINDOW_SIZE[0] - FLAGS_COUNTER[0]) - 40, 
                        (WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 - FLAGS_COUNTER[1]/2)
 
 screen = pygame.display.set_mode(WINDOW_SIZE, 0, 32)
@@ -23,7 +23,7 @@ screen = pygame.display.set_mode(WINDOW_SIZE, 0, 32)
 pygame.display.set_caption('Campo Minato')
 
 clock = pygame.time.Clock()
-fps = 120
+fps = 1000
 
 img_time = " 0"
 
@@ -102,7 +102,7 @@ while True:
                         CRONOMETRE_SIZE[0], CRONOMETRE_SIZE[1]))
 
     #cambio tempo solo ad 1/60 delle volte in cui entra nel ciclo
-    if tempo%120 == 0:
+    if tempo :
         img_time = f'{int(tempo/120):2}'
     render_cronometro = font.render(img_time, True, (230, 80, 110), None)
     render_cronometro = pygame.transform.scale(render_cronometro,(CRONOMETRE_SIZE[1],CRONOMETRE_SIZE[1]))
@@ -208,7 +208,7 @@ while True:
         img_vittoria = font.render(img_vittoria, True, (80,140,120))
         img_vittoria = pygame.transform.scale(img_vittoria,
                                                       (GRIGLIA_SIZE[0]/2, GRIGLIA_SIZE[1]/2))
-        screen.blit(img_vittoria,
+        g.screen.blit(img_vittoria,
                     ((WINDOW_SIZE[0]), 
                     (WINDOW_SIZE[1] - GRIGLIA_SIZE[1]) + GRIGLIA_SIZE[1]/2 - 100))
         g.draw()
