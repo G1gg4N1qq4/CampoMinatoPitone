@@ -45,7 +45,7 @@ class Cella:
     def draw(self) -> None:
 
         if self.coperto:
-            pygame.draw.rect(self.screen, (80, 80, 80),
+            pygame.draw.rect(self.screen, (100, 250, 100),
                             (self.posx, self.posy, self.width, self.height))
             if self.segnato:
                 
@@ -53,10 +53,10 @@ class Cella:
                 self.bandiera = pygame.transform.scale(self.bandiera, (self.width,self.height))
                 self.screen.blit(self.bandiera, (self.posx, self.posy))
         else:
-            pygame.draw.rect(self.screen, (40, 40, 40),
+            pygame.draw.rect(self.screen, (50, 125, 50),
                             (self.posx, self.posy, self.width, self.height))
 
-        pygame.draw.rect(self.screen, (120, 120, 120),
+        pygame.draw.rect(self.screen, (10, 100, 10),
                          (self.posx, self.posy, self.width, self.height), 2)
         # print(self.posx, self.posy)
         if self.val == vuoto or self.coperto:
@@ -80,7 +80,7 @@ class Cella:
         
         
 class Griglia:
-    def __init__(self, screen, width, height, offset, nrig=10, ncol=10, nmine=16) -> None:
+    def __init__(self, screen, width, height, offset, nrig=10, ncol=10, nmine=1) -> None:
         self.screen = screen
         self.width = width
         self.height = height
@@ -133,6 +133,8 @@ class Griglia:
                         self.celle[i][j].val = str(nmine)
 
     def draw(self):
+        pygame.font.init()
+        font = pygame.font.SysFont(pygame.font.get_default_font(),int(self.height), bold = True, italic = False)
         for i,riga in enumerate(self.celle):
             for j,cella in enumerate(riga):
                 cella.draw()
@@ -142,6 +144,15 @@ class Griglia:
                 if self.nbandiere < -3:
                     self.bloccato = True
                     
+        if self.controllatavolo()[0] == self.nmine:
+            img_vittoria = 'Hai Vinto!!!'
+            img_vittoria = font.render(img_vittoria, True, (250,250,250))
+            img_vittoria = pygame.transform.scale(img_vittoria,
+                                                        (self.width, self.width/4))
+            self.screen.blit(img_vittoria,
+                        ((self.width/2) - img_vittoria.get_width()/2, 
+                        (self.height/2) - img_vittoria.get_height()/2))
+            self.bloccato = True
 
     def click(self, x, y):
         x -= self.offset[0]
@@ -188,5 +199,5 @@ class Griglia:
                     coperte +=1
                 if celle.segnato== True:
                     segnate +=1
-                
+        
         return (coperte,segnate)

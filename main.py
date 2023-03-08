@@ -21,6 +21,7 @@ COUNTER_COORDINATES = ((WINDOW_SIZE[0] - FLAGS_COUNTER[0]) - 40,
 screen = pygame.display.set_mode(WINDOW_SIZE, 0, 32)
 
 pygame.display.set_caption('Campo Minato')
+# pygame.display.toggle_fullscreen()
 
 clock = pygame.time.Clock()
 fps = 1000
@@ -45,15 +46,14 @@ g = Griglia(screen, GRIGLIA_SIZE[0], GRIGLIA_SIZE[1], (0, (WINDOW_SIZE[1]-GRIGLI
 g.draw()
 
 #inizializzo pygame.mixer
-pygame.mixer.pre_init(44100,-16,2,512)
-pygame.mixer.init(44100,-16,2,512,)
+pygame.mixer.pre_init(44100,-16,2,2048)
+pygame.mixer.init(44100,-16,2,2048)
 
 # musica = pygame.mixer_music.load("mainmusic.mp3",)
 musica = pygame.mixer.Sound("mainmusic.mp3")
 pressed = False
 opaco = False
-
-
+timeropaco = -1
 
 
 def click_down(posx,posy,su_griglia,button):
@@ -133,16 +133,23 @@ while True:
         #     posx, posy = pygame.mouse.get_pos()
             # print("mousebuttondown:", posx, posy)
             # click_down(posx, posy)
-            
+    
     stato_tasti = pygame.mouse.get_pressed(3)
     if( stato_tasti[0] or stato_tasti[1] or stato_tasti[2]):
         posx, posy = pygame.mouse.get_pos()
         if (posx > WINDOW_SIZE[0]/2-RESTART_SIZE[0]/2 and posx < WINDOW_SIZE[0]/2+RESTART_SIZE[0]/2 and 
                 posy >(WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 - RESTART_SIZE[1]/2 and 
                 posy < (WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 + RESTART_SIZE[1]/2):
-            
+            button_sound = pygame.mixer.Sound("click.wav")
+            button_sound.play()
+            musica = pygame.mixer.Sound("mainmusic.mp3")
+            musica.play(-1)
             opaco = True
-            
+            timeropaco = 11
+
+
+    timeropaco -=1
+
 
             
     if event.type == pygame.MOUSEBUTTONUP and pressed:
@@ -161,7 +168,7 @@ while True:
             if (posx > WINDOW_SIZE[0]/2-RESTART_SIZE[0]/2 and posx < WINDOW_SIZE[0]/2+RESTART_SIZE[0]/2 and 
                 posy >(WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 - RESTART_SIZE[1]/2 and 
                 posy < (WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 + RESTART_SIZE[1]/2):
-
+                print("!")
                 blocca = False
                 riavvio = True
     # if t.vincitore != None:
@@ -180,40 +187,42 @@ while True:
                      (WINDOW_SIZE[1]-GRIGLIA_SIZE[1])/2 - RESTART_SIZE[1]/2, 
                      RESTART_SIZE[0], RESTART_SIZE[1]))
     # draw della faccina sul tasto restart
-    if not g.bloccato:
-        faccina = pygame.image.load("faccina_felice.png")
-        faccina = pygame.transform.scale(faccina, ((RESTART_SIZE[0]), (RESTART_SIZE[1])))
-        g.screen.blit(faccina,
-                      ((WINDOW_SIZE[0] - RESTART_SIZE[0])/2,
-                       (WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 - RESTART_SIZE[1]/2)) 
-    else:
-        if not opaco:
+    if not blocca or g.controllatavolo()[0] == g.nmine:
+        if opaco or timeropaco >=0:
+            faccina = pygame.image.load("faccina_felice_opaca.png")
+            faccina = pygame.transform.scale(faccina, ((RESTART_SIZE[0]), (RESTART_SIZE[1])))
+            g.screen.blit(faccina,
+                        ((WINDOW_SIZE[0] - RESTART_SIZE[0])/2,
+                        (WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 - RESTART_SIZE[1]/2)) 
+            opaco = False
+            musica.stop()
+
+        else:
+            faccina = pygame.image.load("faccina_felice.png")
+            faccina = pygame.transform.scale(faccina, ((RESTART_SIZE[0]), (RESTART_SIZE[1])))
+            g.screen.blit(faccina,
+                        ((WINDOW_SIZE[0] - RESTART_SIZE[0])/2,
+                        (WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 - RESTART_SIZE[1]/2)) 
+    else:   
+        if opaco or timeropaco >=0:
+            faccina = pygame.image.load("faccina_triste_opaca.png")
+            faccina = pygame.transform.scale(faccina, ((RESTART_SIZE[0]), (RESTART_SIZE[1])))
+            screen.blit(faccina,
+                        ((WINDOW_SIZE[0] - RESTART_SIZE[0])/2,
+                        (WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 - RESTART_SIZE[1]/2))
+            opaco = False
+        else:
             faccina = pygame.image.load("faccina_triste.png")
-            faccina = pygame.transform.scale(faccina, (RESTART_SIZE[0], RESTART_SIZE[1]))
+            faccina = pygame.transform.scale(faccina, ((RESTART_SIZE[0]), (RESTART_SIZE[1])))
             
             g.screen.blit(faccina,
                         ((WINDOW_SIZE[0] - RESTART_SIZE[0])/2,
-                                (WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 - RESTART_SIZE[1]/2))
-        else:
-            faccina_opaca = pygame.image.load("faccina_opaca.png")
-            faccina_opaca = pygame.transform.scale(faccina_opaca,(RESTART_SIZE[0], RESTART_SIZE[1]))
-            screen.blit(faccina_opaca,
-                        ((WINDOW_SIZE[0] - RESTART_SIZE[0])/2,
                         (WINDOW_SIZE[1] - GRIGLIA_SIZE[1])/2 - RESTART_SIZE[1]/2))
             
-    risult = g.controllatavolo()
+    # risult = g.controllatavolo()
     
-    if risult[0] == g.nmine:
-        img_vittoria = 'Hai Vinto!!!'
-        img_vittoria = font.render(img_vittoria, True, (80,140,120))
-        img_vittoria = pygame.transform.scale(img_vittoria,
-                                                      (GRIGLIA_SIZE[0]/2, GRIGLIA_SIZE[1]/2))
-        g.screen.blit(img_vittoria,
-                    ((WINDOW_SIZE[0]), 
-                    (WINDOW_SIZE[1] - GRIGLIA_SIZE[1]) + GRIGLIA_SIZE[1]/2 - 100))
-        g.draw()
-        
-        blocca = True
+
+    #     g.draw()
         
     if riavvio: # riavvio vero e proprio
        
