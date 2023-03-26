@@ -45,11 +45,12 @@ def click_down(posx,posy,su_griglia,button):
             posy -= g.offset[1]
             col = (posx*g.ncol) // g.width
             rig = (posy*g.nrig) // g.height
-            g.celle[rig][col].segna(stato_tasti[2])
-            if not g.celle[rig][col].segnato:
-                g.nbandiere +=1
-            else:
-                g.nbandiere -= 1
+            if g.celle[rig][col].coperto == True:
+                g.celle[rig][col].segna(stato_tasti[2])
+                if not g.celle[rig][col].segnato:
+                    g.nbandiere +=1
+                else:
+                    g.nbandiere -= 1
             
         elif g.click(posx, posy):
             explsound = pygame.mixer.Sound("audio/explosionmusic.wav")
@@ -64,6 +65,9 @@ def click_down(posx,posy,su_griglia,button):
             if g.celle[rig][col].segnato == False:
                 if g.celle[rig][col].val == "":
                     g.scopritutto(g.celle[rig][col], rig,col)
+            else:
+                g.celle[rig][col].scopri(g.celle,rig,col)
+
             # elif g.celle[rig][col].segnato == True:
             #     g.celle[rig][col].segnato = False
             #     g.nbandiere+=1
@@ -90,44 +94,45 @@ screen.blit(render_cronometro,
 
 # tempo iniziale in cui il tasto restart rimane opaco, cioè = 0
 timeropaco = 0
-
+g.screen.fill((50, 125, 50))
 while True:
     
     if g.bloccato:
         blocca = True
-        
-    #draw casella cronometro
-    pygame.draw.rect(screen, (255, 255, 255), 
-                    (CRONOMETRE_COORDINATES[0], 
-                        CRONOMETRE_COORDINATES[1], 
-                        CRONOMETRE_SIZE[0], CRONOMETRE_SIZE[1]))
+    
+    if not blocca:
+        #draw casella cronometro
+        pygame.draw.rect(screen, (255, 255, 255), 
+                        (CRONOMETRE_COORDINATES[0], 
+                            CRONOMETRE_COORDINATES[1], 
+                            CRONOMETRE_SIZE[0], CRONOMETRE_SIZE[1]))
 
-    # stampo il tempo del cronometro
-    img_cronometro = pygame.image.load('img/cronometro.png')
-    img_cronometro = pygame.transform.scale( img_cronometro, (CRONOMETRE_SIZE[0]/2, CRONOMETRE_SIZE[1]))
-    screen.blit(img_cronometro,
-                ((CRONOMETRE_COORDINATES[0]),
-                 (CRONOMETRE_COORDINATES[1])))
-    
-    img_time = f'{int((tempo//1000)):2}'
-    render_cronometro = font.render(img_time, True, (230, 80, 110), None)
-    render_cronometro = pygame.transform.scale(render_cronometro,(CRONOMETRE_SIZE[0]/2,CRONOMETRE_SIZE[1]))
-    screen.blit(render_cronometro,
-                ((CRONOMETRE_COORDINATES[0] + img_cronometro.get_size()[0] ),
-                (CRONOMETRE_COORDINATES[1])))
-    
-    #draw contatore bandiere
-    pygame.draw.rect(screen,(255,255,255), (COUNTER_COORDINATES[0],COUNTER_COORDINATES[1],
-                                            FLAGS_COUNTER[0], FLAGS_COUNTER[1]))
-    bandiera = pygame.image.load("img/bandiera.png")
-    bandiera = pygame.transform.scale(bandiera, (FLAGS_COUNTER[0]/2,FLAGS_COUNTER[0]/2))
-    screen.blit(bandiera, (COUNTER_COORDINATES[0], COUNTER_COORDINATES[1]))
-    img_bandiere_counter = f'{g.nbandiere}'
-    img_bandiere_counter = font.render(img_bandiere_counter, True, (50, 120, 250), None)
-    img_bandiere_counter = pygame.transform.scale(img_bandiere_counter,(FLAGS_COUNTER[0]/2, FLAGS_COUNTER[1]))
-    screen.blit(img_bandiere_counter,
-                ((COUNTER_COORDINATES[0] + FLAGS_COUNTER[0]/2 ), 
-                COUNTER_COORDINATES[1]))
+        # stampo il tempo del cronometro
+        img_cronometro = pygame.image.load('img/cronometro.png')
+        img_cronometro = pygame.transform.scale( img_cronometro, (CRONOMETRE_SIZE[0]/2, CRONOMETRE_SIZE[1]))
+        screen.blit(img_cronometro,
+                    ((CRONOMETRE_COORDINATES[0]),
+                    (CRONOMETRE_COORDINATES[1])))
+        
+        img_time = f'{int((tempo//1000)):2}'
+        render_cronometro = font.render(img_time, True, (230, 80, 110), None)
+        render_cronometro = pygame.transform.scale(render_cronometro,(CRONOMETRE_SIZE[0]/2,CRONOMETRE_SIZE[1]))
+        screen.blit(render_cronometro,
+                    ((CRONOMETRE_COORDINATES[0] + img_cronometro.get_size()[0] ),
+                    (CRONOMETRE_COORDINATES[1])))
+        
+        #draw contatore bandiere
+        pygame.draw.rect(screen,(255,255,255), (COUNTER_COORDINATES[0],COUNTER_COORDINATES[1],
+                                                FLAGS_COUNTER[0], FLAGS_COUNTER[1]))
+        bandiera = pygame.image.load("img/bandiera.png")
+        bandiera = pygame.transform.scale(bandiera, (FLAGS_COUNTER[0]/2,FLAGS_COUNTER[0]/2))
+        screen.blit(bandiera, (COUNTER_COORDINATES[0], COUNTER_COORDINATES[1]))
+        img_bandiere_counter = f'{g.nbandiere}'
+        img_bandiere_counter = font.render(img_bandiere_counter, True, (50, 120, 250), None)
+        img_bandiere_counter = pygame.transform.scale(img_bandiere_counter,(FLAGS_COUNTER[0]/2, FLAGS_COUNTER[1]))
+        screen.blit(img_bandiere_counter,
+                    ((COUNTER_COORDINATES[0] + FLAGS_COUNTER[0]/2 ), 
+                    COUNTER_COORDINATES[1]))
         
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -179,6 +184,7 @@ while True:
                 riavvio = True
 
     # chiamo le draw per tutti gli elementi
+
     g.draw()
 
     #draw restart
@@ -226,16 +232,14 @@ while True:
     if riavvio: # riavvio vero e proprio
        
         tempo = 000
-        g = Griglia(screen, GRIGLIA_SIZE[0], GRIGLIA_SIZE[1], (0, (WINDOW_SIZE[1]-GRIGLIA_SIZE[1])))
+        g.reset()
         g.draw()
         riavvio = False
         opaco = False
         blocca = False
-        
+        clock = pygame.time.Clock()
         tempo = 0
         musica.play(-1,0,0)
     
-    if blocca:
-        clock == 0
-    else:
+    if not blocca:
         tempo += clock.tick(fps)
